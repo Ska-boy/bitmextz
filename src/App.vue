@@ -1,28 +1,46 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+      <div class="main">
+        <active-instruments @picked="pickTickerHandle"></active-instruments>
+        <quote-history :quote="quote"></quote-history>
+        <div class="main-item">
+          <h4>Форма создания ордера</h4>
+        </div>
+      </div>
+      <div class="history">
+        <h4>History orders</h4>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { loadQuoteByTicker } from "./api";
+import ActiveInstruments from "./components/ActiveInstruments.vue";
+import QuoteHistory from "./components/QuoteHistory.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
+    ActiveInstruments,
+    QuoteHistory
+  },
+  data() {
+    return {
+      quote: "Loading"
+    };
+  },
+  methods: {
+    pickTickerHandle(ticker) {
+      this.quote = "Loading";
+      this.loadQuoteFromApi(ticker.symbol);
+    },
+    async loadQuoteFromApi(symbol) {
+      this.quote = await loadQuoteByTicker(symbol);
+    }
   }
-}
+};
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style src="@/assets/style.css"></style>
