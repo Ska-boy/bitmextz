@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { loadActiveInstruments, subscribeToUpdatePrice } from "../api";
+import { loadActiveInstruments } from "../api";
 
 export default {
   created() {
@@ -29,7 +29,7 @@ export default {
   methods: {
     async loadActiveInstrumentsFromApi() {
       this.listTradePairs = await loadActiveInstruments();
-      subscribeToUpdatePrice(this.updatePrice);
+      // subscribeToUpdatePrice(this.updatePrice); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     },
     updatePrice(ticker) {
       if (!ticker.length) return;

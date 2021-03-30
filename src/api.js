@@ -45,11 +45,11 @@
 // });
 // };
 
-export const subscribeToUpdatePrice = (cb) => {
+function startSocket({ cb, subscribeInfo, unsubscribeInfo }) {
   let socket = new WebSocket("wss://testnet.bitmex.com/realtime");
 
   socket.onopen = function() {
-    socket.send(`{"op": "subscribe", "args": "instrument"}`);
+    socket.send(subscribeInfo);
   };
 
   socket.onmessage = function(e) {
@@ -59,15 +59,41 @@ export const subscribeToUpdatePrice = (cb) => {
 
   socket.onclose = function(event) {
     if (event.wasClean) {
-      alert(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+      console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
     } else {
-      alert("[close] Соединение прервано");
+      console.log("[close] Соединение прервано");
     }
   };
 
   socket.onerror = function(error) {
     alert(`[error] ${error.message}`);
+    console.log(error);
   };
+
+  return function() {
+    if (unsubscribeInfo) {
+      socket.send(unsubscribeInfo);
+    }
+  };
+}
+
+export const subscribeToUpdatePrice = (cb) => {
+  const socketData = {
+    cb: cb,
+    subscribeInfo: `{"op": "subscribe", "args": "instrument"}`,
+    unsubscribeInfo: false
+  };
+  startSocket(socketData);
+};
+
+export const subscribeToUpdateQuote = (cb, symbol) => {
+  const socketData = {
+    cb: cb,
+    subscribeInfo: `{"op": "subscribe", "args": "tradeBin1m:${symbol}"}`,
+    unsubscribeInfo: `{"op": "unsubscribe", "args": "tradeBin1m:${symbol}"}`
+  };
+
+  return startSocket(socketData);
 };
 
 export const loadActiveInstruments = () =>

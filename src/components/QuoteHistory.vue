@@ -4,6 +4,7 @@
       Список котировок <br />
       (обновляется онлайн)
     </h4>
+    <!-- <strong>{{ quote[0].symbol }}</strong> -->
     <table class="table" v-if="quote != 'Loading'">
       <tr>
         <td class="bold">Time</td>
@@ -12,9 +13,9 @@
         <td class="bold">Max price</td>
         <td class="bold">Min price</td>
       </tr>
-      <tr v-for="item in quote" :key="item.timestamp">
+      <tr v-for="(item, idx) in quote" :key="item.symbol + idx">
         <td>{{ item.timestamp }}</td>
-        <td>{{ item.open }}</td>
+        <td>{{ item.open }} {{ item.symbol + idx }}</td>
         <td>{{ item.close }}</td>
         <td>{{ item.high }}</td>
         <td>{{ item.low }}</td>

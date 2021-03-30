@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { loadQuoteByTicker } from "./api";
+import { loadQuoteByTicker, subscribeToUpdateQuote } from "./api";
 import ActiveInstruments from "./components/ActiveInstruments.vue";
 import QuoteHistory from "./components/QuoteHistory.vue";
 
@@ -28,16 +28,25 @@ export default {
   },
   data() {
     return {
-      quote: "Loading"
+      quote: "Loading",
+      quoteNeedToUnsubscribe: Function
     };
   },
   methods: {
     pickTickerHandle(ticker) {
-      this.quote = "Loading";
+      this.quote = [];
       this.loadQuoteFromApi(ticker.symbol);
     },
     async loadQuoteFromApi(symbol) {
+      this.quoteNeedToUnsubscribe();
+
       this.quote = await loadQuoteByTicker(symbol);
+
+      this.quoteNeedToUnsubscribe = subscribeToUpdateQuote(this.updateQuote, symbol);
+    },
+    updateQuote(quoteData) {
+      this.quote = [...quoteData, ...this.quote];
+      console.log(quoteData);
     }
   }
 };
