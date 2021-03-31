@@ -4,18 +4,20 @@
       Список котировок <br />
       (обновляется онлайн)
     </h4>
-    <!-- <strong>{{ quote[0].symbol }}</strong> -->
-    <table class="table" v-if="quote != 'Loading'">
-      <tr>
-        <td class="bold">Time</td>
-        <td class="bold">Price Open</td>
-        <td class="bold">Price Close</td>
-        <td class="bold">Max price</td>
-        <td class="bold">Min price</td>
+    <div class="center" v-if="quote.length">
+      <strong>{{ pickedTicker }}</strong>
+    </div>
+    <table class="table" v-if="quote.length">
+      <tr class="bold">
+        <td>Time</td>
+        <td>Price Open</td>
+        <td>Price Close</td>
+        <td>Max price</td>
+        <td>Min price</td>
       </tr>
       <tr v-for="(item, idx) in quote" :key="item.symbol + idx">
         <td>{{ item.timestamp }}</td>
-        <td>{{ item.open }} {{ item.symbol + idx }}</td>
+        <td>{{ item.open }}</td>
         <td>{{ item.close }}</td>
         <td>{{ item.high }}</td>
         <td>{{ item.low }}</td>
@@ -28,7 +30,7 @@
 
 <script>
 export default {
-  props: ["quote"],
+  props: ["quote", "pickedTicker"],
   data() {
     return {
       message: "<- Pick pair"

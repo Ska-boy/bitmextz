@@ -1,49 +1,82 @@
-// const crypto = require("crypto");
-// const request = require("request");
-
-// import { devServer } from "../vue.config";
+const crypto = require("crypto");
 
 // const API_URL = "https://testnet.bitmex.com";
-// const API_KEY = "48GphC_MTWN_0ntW4V1osU4S";
-// const API_SECRET = "-hoVHM9kC1JRwlQBPjYdzosCCpKl7CNtomzyCTGVoLcQ5PSV";
+const API_KEY = "48GphC_MTWN_0ntW4V1osU4S";
+const API_SECRET = "-hoVHM9kC1JRwlQBPjYdzosCCpKl7CNtomzyCTGVoLcQ5PSV";
 
-// const expires = Math.round(new Date().getTime() / 1000) + 60;
-// const verb = "GET";
-// const path = "/api/v1/instrument/active";
-// const postBody = "";
+function expires() {
+  return Math.round(new Date().getTime() / 1000) + 60;
+}
 
-// const signature = crypto
-//   .createHmac("sha256", API_SECRET)
-//   .update(verb + path + expires + postBody)
-//   .digest("hex");
+function signature(verb, path, expires, postBody) {
+  return crypto
+    .createHmac("sha256", API_SECRET)
+    .update(verb + path + expires + postBody)
+    .digest("hex");
+}
 
-// const headers = {
-//   "content-type": "application/json",
-//   Accept: "application/json",
-//   "X-Requested-With": "XMLHttpRequest",
-//   // This example uses the 'expires' scheme. You can also use the 'nonce' scheme. See
-//   // https://www.bitmex.com/app/apiKeysUsage for more details.
-//   "api-expires": expires,
-//   "api-key": API_KEY,
-//   "api-signature": signature
-// };
+function postBody(data) {
+  return JSON.stringify(data);
+}
 
-// const requestOptions = {
-//   headers: headers,
-//   // Notice we are using testnet here. Switch to www to query the production site.
-//   url: API_URL + path,
-//   method: verb,
-//   body: postBody
-// };
+export const historyOrders = () => {
+  const path = "/api/v1/order";
+  const verb = "GET";
+  const expire = expires();
+  const signa = signature(verb, path, expire, "");
 
-// export const getData = () => {
-// request(requestOptions, function(error, response, body) {
-//   if (error) {
-//     console.log(error);
-//   }
-//   console.log(body);
-// });
-// };
+  const headers = {
+    "content-type": "application/json",
+    Accept: "application/json",
+    "api-expires": expire,
+    "api-key": API_KEY,
+    "api-signature": signa
+  };
+
+  const requestOptions = {
+    headers: headers,
+    method: verb
+  };
+
+  return fetch(path, requestOptions)
+    .then((r) => r.json())
+    .then((data) => data)
+    .catch(() => {
+      return "Loading error";
+    });
+};
+
+export const sendOrder = (data) => {
+  const path = "/api/v1/order";
+  const verb = "POST";
+
+  const expire = expires();
+  const body = postBody(data);
+  const signa = signature(verb, path, expire, body);
+
+  const headers = {
+    "content-type": "application/json",
+    Accept: "application/json",
+    "api-expires": expire,
+    "api-key": API_KEY,
+    "api-signature": signa
+  };
+
+  const requestOptions = {
+    headers: headers,
+    method: verb,
+    body: body
+  };
+
+  return fetch(path, requestOptions)
+    .then(function(response) {
+      if (response.status >= 400 && response.status < 600) {
+        throw new Error("Not enough money, check you balance");
+      }
+      return response.json();
+    })
+    .then((data) => data);
+};
 
 function startSocket({ cb, subscribeInfo, unsubscribeInfo }) {
   let socket = new WebSocket("wss://testnet.bitmex.com/realtime");

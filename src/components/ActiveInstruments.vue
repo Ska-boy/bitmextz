@@ -1,7 +1,7 @@
 <template>
   <div class="main-item main-instruments">
     <h4>Список торговых пар (обновляется онлайн)</h4>
-    <table class="table">
+    <table v-if="listTradePairs.length" class="table">
       <tr>
         <td class="bold">Symbol</td>
         <td class="bold">Last Price</td>
@@ -11,11 +11,13 @@
         <td>{{ item.lastPrice }}</td>
       </tr>
     </table>
+
+    <strong v-else>Loading</strong>
   </div>
 </template>
 
 <script>
-import { loadActiveInstruments } from "../api";
+import { loadActiveInstruments, subscribeToUpdatePrice } from "../api";
 
 export default {
   created() {
@@ -23,13 +25,13 @@ export default {
   },
   data() {
     return {
-      listTradePairs: "Loading"
+      listTradePairs: ""
     };
   },
   methods: {
     async loadActiveInstrumentsFromApi() {
       this.listTradePairs = await loadActiveInstruments();
-      // subscribeToUpdatePrice(this.updatePrice); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subscribeToUpdatePrice(this.updatePrice);
     },
     updatePrice(ticker) {
       if (!ticker.length) return;
