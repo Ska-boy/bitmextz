@@ -3,6 +3,8 @@ const crypto = require("crypto");
 // const API_URL = "https://testnet.bitmex.com";
 const API_KEY = "48GphC_MTWN_0ntW4V1osU4S";
 const API_SECRET = "-hoVHM9kC1JRwlQBPjYdzosCCpKl7CNtomzyCTGVoLcQ5PSV";
+let socketQuote = null;
+let socketPrice = null;
 
 function expires() {
   return Math.round(new Date().getTime() / 1000) + 60;
@@ -78,8 +80,8 @@ export const sendOrder = (data) => {
     .then((data) => data);
 };
 
-function startSocket({ cb, subscribeInfo, unsubscribeInfo }) {
-  let socket = new WebSocket("wss://testnet.bitmex.com/realtime");
+function startSocket({ cb, subscribeInfo, unsubscribeInfo }, socket) {
+  socket = new WebSocket("wss://testnet.bitmex.com/realtime");
 
   socket.onopen = function() {
     socket.send(subscribeInfo);
@@ -110,13 +112,22 @@ function startSocket({ cb, subscribeInfo, unsubscribeInfo }) {
   };
 }
 
+const updateQuoteSocketData = ({ subscribeInfo, unsubscribeInfo }, socket) => {
+  socket.send(subscribeInfo);
+  return function() {
+    if (unsubscribeInfo) {
+      socket.send(unsubscribeInfo);
+    }
+  };
+};
+
 export const subscribeToUpdatePrice = (cb) => {
   const socketData = {
     cb: cb,
     subscribeInfo: `{"op": "subscribe", "args": "instrument"}`,
     unsubscribeInfo: false
   };
-  startSocket(socketData);
+  startSocket(socketData, socketPrice);
 };
 
 export const subscribeToUpdateQuote = (cb, symbol) => {
@@ -125,8 +136,11 @@ export const subscribeToUpdateQuote = (cb, symbol) => {
     subscribeInfo: `{"op": "subscribe", "args": "tradeBin1m:${symbol}"}`,
     unsubscribeInfo: `{"op": "unsubscribe", "args": "tradeBin1m:${symbol}"}`
   };
-
-  return startSocket(socketData);
+  if (socketQuote) {
+    return updateQuoteSocketData(socketData, socketQuote);
+  } else {
+    return startSocket(socketData, socketQuote);
+  }
 };
 
 export const loadActiveInstruments = () =>

@@ -41,14 +41,11 @@ export default {
     },
     async loadQuoteFromApi(symbol) {
       this.quoteNeedToUnsubscribe();
-
       this.quote = await loadQuoteByTicker(symbol);
-
       this.quoteNeedToUnsubscribe = subscribeToUpdateQuote(this.updateQuote, symbol);
     },
     updateQuote(quoteData) {
       this.quote = [...quoteData, ...this.quote];
-      console.log(quoteData);
     }
   }
 };
